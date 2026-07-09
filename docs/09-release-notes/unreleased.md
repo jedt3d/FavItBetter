@@ -29,6 +29,7 @@ No application release exists yet.
 - Added the first MVP app foundation: Tauri desktop shell, SvelteKit UI, SQLite-backed Chromium bookmark import, sortable/searchable table, preview pane, and import report.
 - Added the local MVP Clean engine: tracking-parameter cleanup, duplicate archiving by cleaned canonical URL, clean reports in SQLite, and a wired Clean button in the desktop UI.
 - Added a browser-runtime guard so opening the Vite URL directly shows a clear Tauri launch instruction instead of a raw `window.__TAURI_INTERNALS__` error.
+- Hardened large-list review after real-world validation with 55,540 bookmarks by moving search, sort, status filtering, and paging into SQLite-backed list queries.
 
 ## Release Impact
 

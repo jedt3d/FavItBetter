@@ -44,11 +44,23 @@
     report: string;
   };
 
+  type BookmarkListResult = {
+    rows: BookmarkRow[];
+    totalCount: number;
+    activeCount: number;
+    archivedCount: number;
+    filteredCount: number;
+    limit: number;
+    offset: number;
+  };
+
   type SortKey = 'title' | 'sourceBrowser' | 'folderPath' | 'originalUrl' | 'status';
+  type StatusFilter = 'active' | 'archived' | 'all';
 
   let bookmarks: BookmarkRow[] = [];
   let selectedId: number | null = null;
   let query = '';
+  let statusFilter: StatusFilter = 'active';
   let sortKey: SortKey = 'title';
   let sortDirection: 1 | -1 = 1;
   const tauriRuntimeHelp =
@@ -57,35 +69,28 @@
   let isTauriRuntime = false;
   let isImporting = false;
   let isCleaning = false;
+  let isLoadingList = false;
   let sourceBrowser = 'chrome';
   let fileInput: HTMLInputElement;
   let splitHost: HTMLElement;
   let leftWidth = 520;
+  let pageSize = 250;
+  let pageIndex = 0;
+  let totalCount = 0;
+  let activeCount = 0;
+  let archivedCount = 0;
+  let filteredCount = 0;
+  let searchDebounce: ReturnType<typeof setTimeout> | null = null;
 
-  $: normalizedQuery = query.trim().toLowerCase();
-  $: filteredBookmarks = bookmarks
-    .filter((bookmark) => {
-      if (!normalizedQuery) return true;
-      return [
-        bookmark.title,
-        bookmark.originalUrl,
-        bookmark.folderPath,
-        bookmark.sourceBrowser,
-        bookmark.status
-      ]
-        .join(' ')
-        .toLowerCase()
-        .includes(normalizedQuery);
-    })
-    .sort((a, b) => compareBookmarks(a, b, sortKey, sortDirection));
   $: selectedBookmark =
-    filteredBookmarks.find((bookmark) => bookmark.id === selectedId) ?? filteredBookmarks[0] ?? null;
+    bookmarks.find((bookmark) => bookmark.id === selectedId) ?? bookmarks[0] ?? null;
   $: previewUrl = selectedBookmark?.cleanedUrl ?? selectedBookmark?.originalUrl ?? '';
-  $: canClean =
-    isTauriRuntime &&
-    bookmarks.some((bookmark) => bookmark.status === 'active') &&
-    !isImporting &&
-    !isCleaning;
+  $: canClean = isTauriRuntime && activeCount > 0 && !isImporting && !isCleaning;
+  $: pageStart = filteredCount === 0 ? 0 : pageIndex * pageSize + 1;
+  $: pageEnd = Math.min((pageIndex + 1) * pageSize, filteredCount);
+  $: pageCount = Math.max(Math.ceil(filteredCount / pageSize), 1);
+  $: canPageBack = pageIndex > 0 && !isLoadingList;
+  $: canPageForward = pageEnd < filteredCount && !isLoadingList;
 
   onMount(() => {
     isTauriRuntime = hasTauriRuntime();
@@ -101,35 +106,91 @@
     return typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window;
   }
 
-  function compareBookmarks(
-    a: BookmarkRow,
-    b: BookmarkRow,
-    key: SortKey,
-    direction: 1 | -1
-  ): number {
-    const left = String(a[key] ?? '').toLowerCase();
-    const right = String(b[key] ?? '').toLowerCase();
-    return left.localeCompare(right) * direction;
-  }
-
   function setSort(nextKey: SortKey) {
     if (sortKey === nextKey) {
       sortDirection = sortDirection === 1 ? -1 : 1;
-      return;
+    } else {
+      sortKey = nextKey;
+      sortDirection = 1;
     }
 
-    sortKey = nextKey;
-    sortDirection = 1;
+    pageIndex = 0;
+    void refreshBookmarks();
+  }
+
+  function setStatusFilter(nextFilter: StatusFilter) {
+    if (statusFilter === nextFilter) return;
+    statusFilter = nextFilter;
+    pageIndex = 0;
+    void refreshBookmarks();
+  }
+
+  function handleSearchInput(event: Event) {
+    query = (event.currentTarget as HTMLInputElement).value;
+    scheduleSearchRefresh();
+  }
+
+  function scheduleSearchRefresh() {
+    pageIndex = 0;
+    if (searchDebounce) {
+      clearTimeout(searchDebounce);
+    }
+
+    searchDebounce = setTimeout(() => {
+      void refreshBookmarks();
+    }, 180);
+  }
+
+  function previousPage() {
+    if (!canPageBack) return;
+    pageIndex -= 1;
+    void refreshBookmarks();
+  }
+
+  function nextPage() {
+    if (!canPageForward) return;
+    pageIndex += 1;
+    void refreshBookmarks();
   }
 
   async function refreshBookmarks() {
+    if (!isTauriRuntime) return;
+
+    isLoadingList = true;
     try {
-      bookmarks = await invoke<BookmarkRow[]>('list_bookmarks');
-      if (bookmarks.length > 0 && selectedId === null) {
+      const result = await invoke<BookmarkListResult>('list_bookmarks', {
+        request: {
+          query,
+          statusFilter,
+          sortKey,
+          sortDirection: sortDirection === 1 ? 'asc' : 'desc',
+          limit: pageSize,
+          offset: pageIndex * pageSize
+        }
+      });
+
+      if (result.rows.length === 0 && result.filteredCount > 0 && pageIndex > 0) {
+        pageIndex = Math.max(Math.ceil(result.filteredCount / pageSize) - 1, 0);
+        isLoadingList = false;
+        await refreshBookmarks();
+        return;
+      }
+
+      bookmarks = result.rows;
+      totalCount = result.totalCount;
+      activeCount = result.activeCount;
+      archivedCount = result.archivedCount;
+      filteredCount = result.filteredCount;
+
+      if (bookmarks.length > 0 && !bookmarks.some((bookmark) => bookmark.id === selectedId)) {
         selectedId = bookmarks[0].id;
+      } else if (bookmarks.length === 0) {
+        selectedId = null;
       }
     } catch (error) {
       report = `Could not load local project database.\n${formatError(error)}`;
+    } finally {
+      isLoadingList = false;
     }
   }
 
@@ -166,6 +227,7 @@
         }
       });
 
+      pageIndex = 0;
       await refreshBookmarks();
       report = result.report;
     } catch (error) {
@@ -184,6 +246,7 @@
 
     try {
       const result = await invoke<CleanResult>('clean_bookmarks');
+      pageIndex = 0;
       await refreshBookmarks();
       report = result.report;
     } catch (error) {
@@ -216,6 +279,10 @@
     if (typeof error === 'string') return error;
     return JSON.stringify(error);
   }
+
+  function formatCount(value: number): string {
+    return new Intl.NumberFormat().format(value);
+  }
 </script>
 
 <svelte:head>
@@ -228,7 +295,7 @@
       <Database size={20} aria-hidden="true" />
       <div>
         <h1>FavItBetter</h1>
-        <p>{bookmarks.length} bookmarks in local pool</p>
+        <p>{formatCount(activeCount)} active / {formatCount(archivedCount)} archived</p>
       </div>
     </div>
 
@@ -290,9 +357,43 @@
       <div class="table-tools">
         <label class="search-box">
           <Search size={17} aria-hidden="true" />
-          <input bind:value={query} type="search" placeholder="Search bookmarks" />
+          <input
+            value={query}
+            type="search"
+            placeholder="Search bookmarks"
+            oninput={handleSearchInput}
+          />
         </label>
-        <span>{filteredBookmarks.length} shown</span>
+        <div class="status-tabs" aria-label="Bookmark status filter">
+          <button
+            type="button"
+            class:active={statusFilter === 'active'}
+            onclick={() => setStatusFilter('active')}
+          >
+            Active
+          </button>
+          <button
+            type="button"
+            class:active={statusFilter === 'archived'}
+            onclick={() => setStatusFilter('archived')}
+          >
+            Archived
+          </button>
+          <button
+            type="button"
+            class:active={statusFilter === 'all'}
+            onclick={() => setStatusFilter('all')}
+          >
+            All
+          </button>
+        </div>
+        <span class="row-count">
+          {#if isLoadingList}
+            Loading
+          {:else}
+            {formatCount(pageStart)}-{formatCount(pageEnd)} of {formatCount(filteredCount)}
+          {/if}
+        </span>
       </div>
 
       <div class="table-wrap">
@@ -314,7 +415,7 @@
             </tr>
           </thead>
           <tbody>
-            {#each filteredBookmarks as bookmark (bookmark.id)}
+            {#each bookmarks as bookmark (bookmark.id)}
               <tr
                 class:active={selectedBookmark?.id === bookmark.id}
                 onclick={() => (selectedId = bookmark.id)}
@@ -326,16 +427,28 @@
                 <td>{bookmark.sourceBrowser}</td>
                 <td>{bookmark.folderPath}</td>
                 <td>
-                  <span class="status">{bookmark.status}</span>
+                  <span class="status" class:archived-status={bookmark.status !== 'active'}>
+                    {bookmark.status}
+                  </span>
                 </td>
               </tr>
             {/each}
           </tbody>
         </table>
 
-        {#if filteredBookmarks.length === 0}
+        {#if bookmarks.length === 0}
           <div class="empty-state">No bookmarks match the current search.</div>
         {/if}
+      </div>
+
+      <div class="table-pager">
+        <span>
+          Page {formatCount(pageIndex + 1)} of {formatCount(pageCount)} · {formatCount(totalCount)} total
+        </span>
+        <div>
+          <button type="button" onclick={previousPage} disabled={!canPageBack}>Previous</button>
+          <button type="button" onclick={nextPage} disabled={!canPageForward}>Next</button>
+        </div>
       </div>
     </section>
 
@@ -414,6 +527,9 @@
   .toolbar-actions,
   .browser-select,
   .search-box,
+  .status-tabs,
+  .table-pager,
+  .table-pager > div,
   .preview-header,
   .preview-header a {
     display: flex;
@@ -523,7 +639,7 @@
 
   .table-pane {
     display: grid;
-    grid-template-rows: 48px minmax(0, 1fr);
+    grid-template-rows: 52px minmax(0, 1fr) 40px;
     border-right: 1px solid #d6dee3;
   }
 
@@ -554,10 +670,48 @@
     border: 0;
   }
 
+  .status-tabs {
+    flex: 0 0 auto;
+    overflow: hidden;
+    border: 1px solid #b8c4cc;
+    border-radius: 6px;
+    background: #ffffff;
+  }
+
+  .status-tabs button {
+    height: 30px;
+    min-width: 64px;
+    border: 0;
+    border-right: 1px solid #d6dee3;
+    background: transparent;
+    color: #64748b;
+    cursor: pointer;
+    font-size: 12px;
+  }
+
+  .status-tabs button:last-child {
+    border-right: 0;
+  }
+
+  .status-tabs button.active {
+    background: #e2f4f1;
+    color: #0f766e;
+    font-weight: 700;
+  }
+
+  .row-count {
+    flex: 0 0 auto;
+    min-width: 116px;
+    text-align: right;
+    white-space: nowrap;
+  }
+
   .table-wrap {
     position: relative;
     min-height: 0;
-    overflow: auto;
+    overflow-x: hidden;
+    overflow-y: scroll;
+    scrollbar-gutter: stable;
   }
 
   table {
@@ -640,6 +794,39 @@
   .status {
     color: #0f766e;
     font-weight: 650;
+  }
+
+  .archived-status {
+    color: #64748b;
+  }
+
+  .table-pager {
+    justify-content: space-between;
+    gap: 12px;
+    padding: 0 12px;
+    border-top: 1px solid #e0e7eb;
+    background: #f6f8f9;
+    color: #64748b;
+    font-size: 12px;
+  }
+
+  .table-pager > div {
+    gap: 8px;
+  }
+
+  .table-pager button {
+    height: 28px;
+    padding: 0 10px;
+    border: 1px solid #b8c4cc;
+    border-radius: 6px;
+    background: #ffffff;
+    color: #334155;
+    cursor: pointer;
+  }
+
+  .table-pager button:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
   }
 
   .empty-state,

@@ -23,9 +23,9 @@ related:
 
 Current Phase: Development
 
-Status: Vertical Slice 0.2 local clean engine implemented locally
+Status: Vertical Slice 0.2.1 large-list table hardening implemented locally
 
-Objective: Add network dead-link checking with bounded concurrency after local duplicate and tracking-query cleanup.
+Objective: Add network dead-link checking with bounded concurrency after large-list import, cleanup, and review are stable.
 
 ## Summary
 
@@ -306,10 +306,11 @@ References:
 - [x] App stores imported project state in local SQLite.
 - [x] App builds on macOS.
 - [ ] App runs on Windows.
-- [ ] App imports local Google Chrome bookmark files.
-- [ ] App imports local Microsoft Edge bookmark files.
-- [ ] App merges Chrome and Edge bookmarks into one pool.
+- [x] App imports local Google Chrome bookmark files.
+- [x] App imports local Microsoft Edge bookmark files.
+- [x] App merges Chrome and Edge bookmarks into one pool.
 - [x] Table displays imported bookmarks with search and sorting.
+- [x] Table search, sorting, and review remain usable for large imported pools by loading bounded pages from SQLite.
 - [x] Selecting a row loads the bookmark in a right-side preview pane.
 - [x] Table and preview panes are resizable.
 - [x] Clean button archives duplicates from the active pool.
@@ -374,6 +375,33 @@ Not included in this slice:
 - Automatic browser profile discovery.
 - Windows validation.
 
+### Vertical Slice 0.2.1: Large-List Table Hardening
+
+Status: implemented locally
+
+Related issue: [#1](https://github.com/jedt3d/FavItBetter/issues/1)
+
+Implemented:
+
+- Replaced all-at-once bookmark listing with SQLite-backed paging.
+- Added server-side search, status filtering, and sort mapping for known table columns.
+- Added active, archived, and all filters so cleaned results can be reviewed separately.
+- Added page controls and count display for large imported pools.
+- Kept table body scrollable while toolbar and pager remain fixed.
+- Debounced search input so typing does not filter tens of thousands of rows in the frontend.
+
+Validation input:
+
+- Product owner imported and cleaned a real local pool of 55,540 active bookmarks.
+- Clean archived 42,374 duplicates, leaving 13,166 active bookmarks, with zero errors.
+
+Not included in this slice:
+
+- Network dead-link checking.
+- Table virtualization with continuous scroll.
+- Exportable clean report file.
+- Cancel/resume for long-running clean or link-check jobs.
+
 ## Tests And Validation
 
 - Parse fixture Chromium bookmark JSON from Chrome.
@@ -389,9 +417,11 @@ Not included in this slice:
 - Verify link check scheduler respects max concurrency and reduces concurrency under simulated timeout or rate-limit pressure.
 - Verify active vs archived counts in report.
 - Verify UI search and sorting behavior.
+- Verify UI search and sorting do not render the full bookmark pool at once for large imports.
 - Verify WebView loads selected active bookmark.
 - Vertical Slice 0.1 validation: `npm run check`, `npm run build`, `cargo fmt --check`, `cargo test`, `cargo check`, and `npm run tauri -- build`.
 - Vertical Slice 0.2 validation: `cargo test`, `npm run check`, `cargo check`, `npm run build`, `npm run tauri -- build`, ProDOS audit, Jekyll docs build, and `git diff --check`.
+- Vertical Slice 0.2.1 validation: `cargo test`, `npm run check`, `npm run build`, Tauri build, Jekyll docs build, and `git diff --check`.
 
 ## Documentation Impact
 
