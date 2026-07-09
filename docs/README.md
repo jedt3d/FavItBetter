@@ -4,18 +4,19 @@ This is the canonical knowledge base for FavItBetter.
 
 ## Current Feature Cycle
 
-Feature: Project Setup
+Feature: MVP Desktop Chromium Cleaner
 
-Current Phase: Knowledge Capture
+Current Phase: Product Planning
 
-Status: Initial brainstorm captured
+Status: MVP architecture and cleanup policy captured
 
-Objective: Convert the user's product idea into a compact, extensible project outline before implementation.
+Objective: Keep the first desktop MVP spec synchronized before implementation.
 
 ## Primary Docs
 
 - `00-foundation/project-brief.md`: raw narrative, classified knowledge, and project outline.
 - `01-lifecycle/features/feature.bookmark-core.md`: initial Agent-First Specification for the core product.
+- `01-lifecycle/features/feature.mvp-desktop-chromium-cleaner.md`: first MVP scope for the desktop Chromium bookmark cleaner.
 - `00-foundation/decision-log.md`: accepted and proposed decisions.
 - `03-tracks/ux-architecture-track.md`: mental model, information architecture, and workflow direction.
 - `02-governance/pages-publication.md`: FavItBetter-specific documentation publishing rule.

@@ -12,6 +12,10 @@ The project is currently in ProDOS knowledge capture and product planning. There
 - Keep the product library synced through a user-owned Shared Drive folder.
 - Leave extension points for browser connectors, cleanup rules, export targets, metadata providers, and sync providers.
 
+## First MVP
+
+The first MVP is narrower than the full product vision: a single-user Tauri 2.0 desktop app for macOS and Windows that imports local Google Chrome and Microsoft Edge bookmark files, persists the pool in SQLite, archives confirmed dead and duplicate links, removes known tracking query parameters, previews selected links in a WebView, and reports the cleanup in plain text.
+
 ## Documentation
 
 Start with `docs/README.md`.

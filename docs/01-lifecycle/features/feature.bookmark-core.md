@@ -14,6 +14,7 @@ related_issue:
 related:
   - docs/00-foundation/project-brief.md
   - docs/03-tracks/ux-architecture-track.md
+  - docs/01-lifecycle/features/feature.mvp-desktop-chromium-cleaner.md
 ---
 
 # Core Cross-Browser Bookmark Curation And Sync
@@ -43,10 +44,15 @@ Build the core FavItBetter experience: import bookmarks from multiple browsers, 
 - The first feature is product and architecture planning, not application code.
 - Desktop and mobile are first-class product targets.
 - Extension points are part of the core architecture direction.
+- The first concrete MVP implementation slice is `feature.mvp-desktop-chromium-cleaner`.
+- The desktop MVP uses Tauri 2.0, SvelteKit 5, Rust backend commands, and a local SQLite project database.
+- The desktop MVP removes tracking query parameters only and preserves non-tracking query strings.
+- The desktop MVP checks links with `HEAD` first, tags inconclusive results as `needs_get_fallback`, runs `GET` fallback for those tagged links, and uses 80 seconds per attempt for up to three attempts.
 
 ## Recommendations
 
 - Use local device databases for runtime performance, then publish a durable sync package into Shared Drive.
+- For the desktop MVP, keep network link checking in the Rust backend with bounded async concurrency and batched SQLite writes.
 - Avoid automatic destructive actions in the first MVP.
 - Start with import, review, app-library cleanup, and export. Treat browser writeback as a later approval-gated capability.
 - Design connectors as replaceable modules:
@@ -66,13 +72,7 @@ Build the core FavItBetter experience: import bookmarks from multiple browsers, 
 
 ## Open Questions
 
-- Which two browsers should define the first desktop import proof: Safari and Chrome, Chrome and Firefox, or another pair?
-- Should cleanup suggestions be conservative by default, or aggressively shrink the library?
-- Is "necessary" determined by explicit user review, rules, usage history, AI scoring, or a mix?
 - Should archived bookmarks remain searchable?
-- Which export formats are required first: browser HTML, JSON, Safari plist, Chromium JSON, Firefox JSON, or app-only sync?
-- Which platforms are first: macOS, Windows, Linux, iOS, Android?
-- Which Shared Drive provider is the target test environment?
 
 ## Goals
 
@@ -186,6 +186,7 @@ Build the core FavItBetter experience: import bookmarks from multiple browsers, 
 - Archive retention.
 - Conflict resolution policy.
 - Link check network limits.
+- Internal concurrency policy for desktop link checking.
 - AI enrichment on/off and provider settings if AI is used.
 - Export target preferences.
 
@@ -221,3 +222,21 @@ Planned validation:
 
 No release yet. First release notes live in `docs/09-release-notes/unreleased.md`.
 
+## MVP Slice
+
+The first MVP is scoped separately in `docs/01-lifecycle/features/feature.mvp-desktop-chromium-cleaner.md`.
+
+MVP constraints:
+
+- macOS and Windows only
+- Google Chrome and Microsoft Edge only
+- local Chromium bookmark files only
+- no mobile
+- no Shared Drive sync
+- no browser writeback
+- archive-only cleanup
+- local SQLite project database
+- Tauri 2.0 and SvelteKit 5
+- tracking-parameter-only query cleanup
+- `HEAD` first link checking with `GET` fallback for inconclusive results
+- one-screen UI with toolbar, table, WebView preview, resizable split, and text report

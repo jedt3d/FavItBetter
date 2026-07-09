@@ -8,6 +8,7 @@ ai_priority: medium
 last_updated: 2026-07-09
 source_of_truth:
   - docs/01-lifecycle/features/feature.bookmark-core.md
+  - docs/01-lifecycle/features/feature.mvp-desktop-chromium-cleaner.md
 ---
 
 # UX Architecture Track
@@ -29,7 +30,16 @@ FavItBetter is not a browser bookmark folder editor first. It is a curation work
 
 ## Information Architecture
 
-### Desktop
+### MVP Desktop
+
+- Single main window
+- Top toolbar
+- Bookmark pool table
+- WebView preview
+- Plain text report
+- Local SQLite project state
+
+### Future Desktop
 
 - Dashboard
 - Sources
@@ -43,7 +53,7 @@ FavItBetter is not a browser bookmark folder editor first. It is a curation work
 - Extensions
 - Settings
 
-### Mobile
+### Future Mobile
 
 - Library
 - Quick Save
@@ -54,6 +64,22 @@ FavItBetter is not a browser bookmark folder editor first. It is a curation work
 - Settings
 
 ## Core Workflows
+
+### MVP Import And Clean
+
+1. User clicks **Import**.
+2. App finds or accepts local Google Chrome and Microsoft Edge bookmark files.
+3. App merges bookmarks into one pool.
+4. App shows the pool in a left-side searchable/sortable table.
+5. User clicks **Clean**.
+6. App archives duplicate links and confirmed dead links from the active pool.
+7. App canonicalizes URLs and removes known tracking query parameters for duplicate detection/reporting.
+8. App tags inconclusive `HEAD` link checks as `needs_get_fallback` and runs `GET` fallback.
+9. App reports confirmed dead links and unresolved uncertain links separately.
+10. App writes a plain text report to the bottom textarea.
+11. User selects a table row.
+12. App loads the selected link in a right-side WebView preview.
+13. User can resize the table/preview split.
 
 ### Import And Review
 
@@ -90,9 +116,22 @@ FavItBetter is not a browser bookmark folder editor first. It is a curation work
 - Sync conflicts should be visible and explainable, not silent.
 - Mobile screens should prioritize search, quick save, and light review rather than full source management.
 - Desktop should handle heavier import, cleanup, and export workflows.
+- MVP cleanup is automatic after pressing **Clean** and does not expose cleanup options.
+- MVP uses archive-only behavior instead of destructive deletion.
+- MVP uses a left table and right WebView preview with a resizable divider.
+- MVP report distinguishes confirmed dead links from unresolved uncertain links after fallback.
+- MVP does not expose link-check concurrency controls in the UI.
 
 ## Component Inventory
 
+- MVP toolbar
+- MVP import button
+- MVP clean button
+- MVP searchable/sortable bookmark table
+- MVP resizable split view
+- MVP WebView preview
+- MVP plain text report textarea
+- MVP clean progress/report status
 - Source connector list
 - Import summary
 - Review queue item
@@ -107,7 +146,6 @@ FavItBetter is not a browser bookmark folder editor first. It is a curation work
 
 ## Open Questions
 
-- Should the primary desktop layout be sidebar plus detail pane, or a command/search centered workspace?
-- Should archive be the default for cleanup instead of delete?
-- Should review queue use simple decisions or expose confidence, rule source, and evidence by default?
-
+- Should archived bookmarks remain searchable in the MVP?
+- Should the report textarea be read-only?
+- Should WebView preview use original URL or cleaned URL when query parameters were removed?

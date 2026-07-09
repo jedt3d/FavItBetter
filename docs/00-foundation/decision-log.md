@@ -205,3 +205,107 @@ This satisfies the requested theme direction while keeping the repository small,
 - Docs: `THIRD_PARTY_NOTICES.md`
 - Docs: `docs/hello-world.md`
 - Docs: `docs/_layouts/doc.html`
+
+## 2026-07-09 - Scope First MVP To Desktop Chromium Bookmark Cleaner
+
+Status: Accepted
+
+Owner: product owner
+
+## Context
+
+The product owner answered the first MVP interview. The broader product vision includes desktop, mobile, sync, extensibility, and future AI support, but the first buildable MVP needs a narrower target.
+
+## Decision
+
+The first MVP will be a single-user desktop app for macOS and Windows. It will import local Google Chrome and Microsoft Edge bookmark files, merge them into one pool, automatically clean confirmed dead links, duplicate links, and known tracking query parameters, then show the result in one screen with a toolbar, searchable/sortable table, right-side WebView preview, resizable split, and bottom plain text report.
+
+The first MVP will not include mobile, Shared Drive sync, browser writeback, non-Chromium browsers, or AI cleanup.
+
+## Rationale
+
+This scope proves the core value quickly: import real browser bookmarks, clean obvious bookmark waste, preview remaining links, and report what happened.
+
+## Consequences
+
+- MVP implementation should focus on Chromium bookmark JSON parsing.
+- Cleanup is automatic after the user clicks **Clean** and has no options in the MVP.
+- "Removed" bookmarks are archive-only inside the app and are not deleted from Chrome or Edge.
+- Network link checking is allowed with retries and timeout behavior.
+- Query cleanup needs careful canonicalization to avoid breaking links that require query parameters.
+
+## Alternatives Considered
+
+- Mobile MVP: rejected for first implementation.
+- Shared Drive sync MVP: rejected for first implementation.
+- Browser writeback: rejected for first implementation.
+- AI tagging/categorization: deferred as future scope.
+
+## Related Artifacts
+
+- Docs: `docs/01-lifecycle/features/feature.mvp-desktop-chromium-cleaner.md`
+- Docs: `docs/00-foundation/project-brief.md`
+- Docs: `docs/03-tracks/ux-architecture-track.md`
+
+## 2026-07-09 - Use Tauri 2 SvelteKit 5 And SQLite For Desktop MVP
+
+Status: Accepted
+
+Owner: product owner
+
+## Context
+
+The product owner confirmed a preference for Tauri 2.0 with a SvelteKit 5 frontend and local SQLite storage. The MVP must run on macOS and Windows and needs high-concurrency URL checking.
+
+## Decision
+
+The desktop MVP will use Tauri 2.0 as the application shell, SvelteKit 5 as the frontend, Rust backend commands for local system work and network checks, and SQLite as the local project database.
+
+High-concurrency link checking will run in the Rust backend with bounded/adaptive async workers. SQLite writes should be batched or queued rather than performed independently by every checker task.
+
+## Rationale
+
+This stack matches the user's preference, supports a desktop WebView-style UI on macOS and Windows, and lets the network checker use Rust concurrency without putting long-running cleanup work in the frontend.
+
+## Consequences
+
+- The SvelteKit frontend should be built as a static Tauri frontend.
+- The local SQLite database is the runtime project database for the MVP.
+- Future Shared Drive sync should not directly sync the live SQLite runtime database.
+- The UI should expose **Import** and **Clean**, but not expose concurrency tuning in the MVP.
+
+## Related Artifacts
+
+- Docs: `docs/01-lifecycle/features/feature.mvp-desktop-chromium-cleaner.md`
+- Docs: `docs/00-foundation/project-brief.md`
+
+## 2026-07-09 - Define MVP URL Cleanup And Link Check Policy
+
+Status: Accepted
+
+Owner: product owner
+
+## Context
+
+The product owner clarified that query cleanup should remove tracking parameters only, not every query string. The owner also clarified that the 80-second timeout is per attempt and asked for criteria to identify uncertain `HEAD` results that should later fall back to `GET`.
+
+## Decision
+
+MVP query cleanup will strip known tracking parameters only and preserve non-tracking query parameters. Link checking will try `HEAD` first, allow up to three attempts per link, use 80 seconds per attempt, wait five seconds between attempts, tag inconclusive results as `needs_get_fallback`, and run `GET` fallback for those tagged links before final classification.
+
+Inconclusive `HEAD` examples include `405`, `403`, `401`, `429`, inconsistent redirects, likely method-specific server/TLS behavior, and other cases where a `GET` request may succeed even though `HEAD` was not reliable.
+
+## Rationale
+
+Tracking-only cleanup reduces bookmark noise without breaking links that depend on query parameters. `HEAD` is efficient for large batches, while explicit fallback tagging avoids false dead-link decisions for servers that do not handle `HEAD` correctly.
+
+## Consequences
+
+- The report must separate confirmed dead links from unresolved uncertain links.
+- The app should not archive every inconclusive `HEAD` response as dead.
+- Tests need fixture coverage for tracking-parameter cleanup, non-tracking parameter preservation, and `HEAD` classification.
+
+## Related Artifacts
+
+- Docs: `docs/01-lifecycle/features/feature.mvp-desktop-chromium-cleaner.md`
+- Docs: `docs/00-foundation/glossary.md`

@@ -32,6 +32,10 @@ FavItBetter is a planned local-first bookmark manager for desktop and mobile. Th
     <strong>Core Feature Spec</strong>
     <span>Cross-browser bookmark curation and sync plan.</span>
   </a>
+  <a class="listing-card" href="{{ "/01-lifecycle/features/feature.mvp-desktop-chromium-cleaner.html" | relative_url }}">
+    <strong>MVP Desktop Cleaner</strong>
+    <span>Mac/Windows Chromium bookmark import, clean, preview, and report.</span>
+  </a>
   <a class="listing-card" href="{{ "/00-foundation/decision-log.html" | relative_url }}">
     <strong>Decision Log</strong>
     <span>Accepted and superseded project decisions.</span>

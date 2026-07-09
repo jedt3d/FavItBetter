@@ -9,6 +9,7 @@ source_of_truth:
   - docs/01-lifecycle/features/feature.bookmark-core.md
 related:
   - docs/03-tracks/ux-architecture-track.md
+  - docs/01-lifecycle/features/feature.mvp-desktop-chromium-cleaner.md
 ---
 
 # FavItBetter Project Brief
@@ -24,12 +25,19 @@ The user wants to start a ProDOS-governed brainstorm for software that manages b
 - The product is about bookmark management across multiple browsers.
 - The product should have desktop and mobile versions.
 - The product should sync files through a personal Shared Drive.
+- The first MVP uses local persistence through SQLite and does not sync data yet.
 
 ## Decisions
 
 - FavItBetter will begin with knowledge capture and product planning before implementation.
 - Desktop and mobile are first-class targets for the product direction.
 - The product must support future extension points rather than only a fixed browser list.
+- The first MVP is narrowed to a single-user desktop app for macOS and Windows.
+- The first MVP supports Google Chrome and Microsoft Edge bookmark files only.
+- The first MVP excludes mobile, Shared Drive sync, browser writeback, and AI cleanup.
+- The first MVP uses Tauri 2.0, SvelteKit 5, Rust backend commands, and a local SQLite project database.
+- The first MVP removes tracking query parameters only, not every query string.
+- The first MVP checks links with `HEAD` first, uses 80 seconds per attempt for up to three attempts, tags inconclusive results as `needs_get_fallback`, and runs `GET` fallback for those tagged links.
 
 ## Recommendations
 
@@ -43,6 +51,7 @@ The user wants to start a ProDOS-governed brainstorm for software that manages b
   - metadata providers
   - sync providers
 - Make mobile useful even if direct browser bookmark access is limited. Mobile should support quick save, search, review, and synced library access through platform-allowed mechanisms.
+- Implement high-concurrency link checking in the Tauri Rust backend with bounded async workers and batched SQLite writes.
 
 ## Assumptions
 
@@ -53,13 +62,8 @@ The user wants to start a ProDOS-governed brainstorm for software that manages b
 
 ## Open Questions
 
-- Which Shared Drive provider should be treated as the first-class target first?
-- Which browsers should be supported in the first desktop import pass: Safari, Chrome, Edge, Brave, Firefox, or another browser?
-- Should the app ever write changes back into browser bookmark stores automatically?
-- Should cleanup include network link checking, and if yes, how aggressive can it be?
-- Should AI be used for categorization, summaries, or "keep/delete" suggestions?
-- Should the mobile app rely only on the app library and share sheet, or does direct mobile browser integration matter?
-- Does "เหลือเฉพาะอันที่จำเป็น" mean user-reviewed essentials only, automatic scoring, or configurable rule sets?
+- Should archived bookmarks remain searchable in the MVP?
+- Should WebView preview use the original URL or cleaned URL when tracking parameters were removed?
 
 ## Product Shape
 
@@ -75,7 +79,7 @@ FavItBetter should be a local-first curation tool:
 
 ## MVP Boundary
 
-The first MVP should prove that a user can consolidate bookmarks from at least two desktop browser sources into one clean library, review cleanup suggestions, and sync that library to another device through a file sync folder.
+The first MVP should prove that a single user can import Google Chrome and Microsoft Edge bookmark files from a local macOS or Windows machine, persist the imported pool in SQLite, automatically clean confirmed dead links, duplicates, and known tracking query parameters, preview selected links in a WebView, and produce a plain text cleanup report.
 
 ## Non-Goals For The First MVP
 
@@ -85,3 +89,8 @@ The first MVP should prove that a user can consolidate bookmarks from at least t
 - Full browser extension ecosystem.
 - Public social bookmark sharing.
 - Paid marketplace for rule packs or connectors.
+- Mobile app.
+- Shared Drive sync.
+- Browser writeback.
+- Non-Chromium browsers.
+- AI tagging or categorization.

@@ -22,6 +22,9 @@ No application release exists yet.
 - Superseded the earlier GitHub Wiki publishing evaluation.
 - Added a Jekyll Hello World page as the first publishing smoke test.
 - Adapted the documentation site toward CloudCannon Base knowledge-base theme patterns.
+- Captured the first MVP scope as a desktop-only Chromium bookmark cleaner.
+- Confirmed the desktop MVP architecture: Tauri 2.0, SvelteKit 5, Rust backend link checking, and local SQLite project storage.
+- Clarified MVP cleanup policy: remove tracking query parameters only, use 80 seconds per link-check attempt, and run `GET` fallback for inconclusive `HEAD` checks.
 
 ## Release Impact
 
