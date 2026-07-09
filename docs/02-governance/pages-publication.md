@@ -50,6 +50,7 @@ Read the Docs style can be achieved later through Sphinx, MkDocs, or a Jekyll th
 - Add a local layout adapted from CloudCannon Base knowledge-base patterns.
 - Deploy through `.github/workflows/pages.yml`.
 - Keep GitHub Pages configured to use GitHub Actions.
+- Keep GitHub-owned Pages workflow actions on Node 24-compatible major versions.
 - Adapt CloudCannon Base styling and information architecture incrementally if the first generated site needs richer docs navigation.
 
 ## Assumptions

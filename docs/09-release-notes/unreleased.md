@@ -25,6 +25,7 @@ No application release exists yet.
 - Captured the first MVP scope as a desktop-only Chromium bookmark cleaner.
 - Confirmed the desktop MVP architecture: Tauri 2.0, SvelteKit 5, Rust backend link checking, and local SQLite project storage.
 - Clarified MVP cleanup policy: remove tracking query parameters only, use 80 seconds per link-check attempt, and run `GET` fallback for inconclusive `HEAD` checks.
+- Upgraded the GitHub Pages workflow actions to Node 24-compatible major versions.
 
 ## Release Impact
 
