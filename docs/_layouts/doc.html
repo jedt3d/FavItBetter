@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    {% seo %}
+    <link rel="stylesheet" href="{{ '/assets/css/site.css' | relative_url }}">
+  </head>
+  <body class="{{ page.body_class }}">
+    <header class="site-header">
+      <div class="wrapper">
+        <section class="top-bar">
+          <a class="brand" href="{{ '/' | relative_url }}">FavItBetter</a>
+          <nav class="site-menu" aria-label="Primary navigation">
+            {% for item in site.data.navigation %}
+              {% assign active = "" %}
+              {% if page.url == item.link %}
+                {% assign active = "active" %}
+              {% endif %}
+              <a class="{{ active }}" href="{{ item.link | relative_url }}">{{ item.name }}</a>
+            {% endfor %}
+          </nav>
+        </section>
+
+        {% if page.hero %}
+          <section class="hero-search">
+            <h1>{{ page.hero_title | default: page.title }}</h1>
+            <p>{{ page.hero_subtitle }}</p>
+            <form action="{{ '/hello-world.html' | relative_url }}" role="search">
+              <input type="search" value="Hello World" aria-label="Documentation search preview">
+              <button type="submit">Open</button>
+            </form>
+          </section>
+        {% endif %}
+      </div>
+    </header>
+
+    <section class="content">
+      <main class="wrapper">
+        {{ content }}
+      </main>
+    </section>
+
+    <footer class="site-footer">
+      <div class="wrapper">
+        <span>Documentation theme adapted from CloudCannon Base.</span>
+        <a href="{{ '/02-governance/pages-publication.html' | relative_url }}">Publication governance</a>
+      </div>
+    </footer>
+  </body>
+</html>

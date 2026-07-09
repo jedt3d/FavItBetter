@@ -1,0 +1,12 @@
+- name: Home
+  link: /
+- name: Hello World
+  link: /hello-world.html
+- name: Project Brief
+  link: /00-foundation/project-brief.html
+- name: Core Spec
+  link: /01-lifecycle/features/feature.bookmark-core.html
+- name: Decisions
+  link: /00-foundation/decision-log.html
+- name: Publishing
+  link: /02-governance/pages-publication.html

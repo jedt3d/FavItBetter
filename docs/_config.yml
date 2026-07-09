@@ -1,0 +1,32 @@
+title: FavItBetter
+description: ProDOS knowledge base for the FavItBetter bookmark manager project.
+url: "https://jedt3d.github.io"
+baseurl: "/FavItBetter"
+repository: jedt3d/FavItBetter
+theme_reference: CloudCannon/base-jekyll-template
+author:
+  name: FavItBetter Project
+social:
+  name: FavItBetter
+  links:
+    - https://github.com/jedt3d/FavItBetter
+
+markdown: kramdown
+highlighter: rouge
+
+plugins:
+  - jekyll-seo-tag
+  - jekyll-sitemap
+
+defaults:
+  - scope:
+      path: ""
+      type: "pages"
+    values:
+      layout: "doc"
+
+exclude:
+  - README.md
+  - Gemfile
+  - Gemfile.lock
+  - vendor
