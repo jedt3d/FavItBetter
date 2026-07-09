@@ -1,3 +1,4 @@
+use std::fs;
 use std::path::{Path, PathBuf};
 use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -46,6 +47,20 @@ pub struct CleanResult {
     pub dead_link_count: i64,
     pub errors: Vec<String>,
     pub report: String,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ExportReportRequest {
+    pub content: String,
+    pub label: Option<String>,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ExportReportResult {
+    pub file_name: String,
+    pub path: String,
 }
 
 #[derive(Debug, Serialize)]
@@ -242,6 +257,34 @@ pub fn import_bookmarks_json(
 pub fn clean_bookmarks(state: State<'_, AppState>) -> Result<CleanResult, String> {
     let mut connection = open_database(&state)?;
     clean_database(&mut connection)
+}
+
+#[tauri::command]
+pub fn export_report_txt(
+    state: State<'_, AppState>,
+    request: ExportReportRequest,
+) -> Result<ExportReportResult, String> {
+    let directory = state
+        .db_path
+        .parent()
+        .ok_or_else(|| "Could not locate application data directory".to_string())?;
+    export_report_to_directory(directory, request)
+}
+
+fn export_report_to_directory(
+    directory: &Path,
+    request: ExportReportRequest,
+) -> Result<ExportReportResult, String> {
+    let label = sanitize_report_label(request.label.as_deref().unwrap_or("report"));
+    let file_name = format!("favitbetter-{label}-{}.txt", unix_timestamp());
+    let path = directory.join(&file_name);
+
+    fs::write(&path, request.content).map_err(|err| format!("Could not export report: {err}"))?;
+
+    Ok(ExportReportResult {
+        file_name,
+        path: path.display().to_string(),
+    })
 }
 
 #[tauri::command]
@@ -460,6 +503,29 @@ fn normalize_status_filter(status_filter: Option<&str>) -> Option<&'static str> 
     }
 }
 
+fn sanitize_report_label(label: &str) -> String {
+    let sanitized = label
+        .chars()
+        .map(|character| {
+            if character.is_ascii_alphanumeric() || character == '-' {
+                character.to_ascii_lowercase()
+            } else {
+                '-'
+            }
+        })
+        .collect::<String>()
+        .split('-')
+        .filter(|part| !part.is_empty())
+        .collect::<Vec<_>>()
+        .join("-");
+
+    if sanitized.is_empty() {
+        "report".to_string()
+    } else {
+        sanitized
+    }
+}
+
 fn bookmark_filter_sql(query: &str, status_filter: Option<&str>) -> (String, Vec<SqlValue>) {
     let mut clauses = Vec::new();
     let mut values = Vec::new();
@@ -641,8 +707,8 @@ fn unix_timestamp() -> String {
 #[cfg(test)]
 mod tests {
     use super::{
-        clean_database, initialize_database, insert_bookmark, list_bookmark_page,
-        ListBookmarksRequest,
+        clean_database, export_report_to_directory, initialize_database, insert_bookmark,
+        list_bookmark_page, ExportReportRequest, ListBookmarksRequest,
     };
     use crate::bookmarks::ParsedBookmark;
     use rusqlite::Connection;
@@ -796,5 +862,24 @@ mod tests {
         assert_eq!(archived_result.filtered_count, 1);
         assert_eq!(archived_result.rows[0].status, "archived");
         assert_eq!(archived_result.rows[0].title, "Old Svelte Guide");
+    }
+
+    #[test]
+    fn export_report_writes_sanitized_text_file() {
+        let temp_dir = tempfile::tempdir().expect("temp dir should exist");
+        let result = export_report_to_directory(
+            temp_dir.path(),
+            ExportReportRequest {
+                content: "Clean complete\nErrors: 0".to_string(),
+                label: Some("Clean Report!".to_string()),
+            },
+        )
+        .expect("report should export");
+
+        assert!(result.file_name.starts_with("favitbetter-clean-report-"));
+        assert!(result.file_name.ends_with(".txt"));
+
+        let exported = std::fs::read_to_string(result.path).expect("exported report should read");
+        assert_eq!(exported, "Clean complete\nErrors: 0");
     }
 }

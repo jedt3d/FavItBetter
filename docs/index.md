@@ -48,6 +48,6 @@ Feature: MVP Desktop Chromium Cleaner
 
 Current Phase: Development
 
-Status: Vertical Slice 0.2.1 large-list table hardening implemented locally
+Status: Vertical Slice 0.2.2 report copy/export implemented locally
 
-Objective: Add network dead-link checking with bounded concurrency after large-list import, cleanup, and review are stable.
+Objective: Add network dead-link checking with bounded concurrency after large-list import, cleanup, review, and report export are stable.

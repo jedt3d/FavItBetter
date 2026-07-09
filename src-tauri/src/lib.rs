@@ -11,6 +11,7 @@ pub fn run() {
         .setup(|app| setup_app(app))
         .invoke_handler(tauri::generate_handler![
             db::clean_bookmarks,
+            db::export_report_txt,
             db::import_bookmarks_json,
             db::list_bookmarks
         ])

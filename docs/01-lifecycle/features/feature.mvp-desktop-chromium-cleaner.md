@@ -23,9 +23,9 @@ related:
 
 Current Phase: Development
 
-Status: Vertical Slice 0.2.1 large-list table hardening implemented locally
+Status: Vertical Slice 0.2.2 report copy/export implemented locally
 
-Objective: Add network dead-link checking with bounded concurrency after large-list import, cleanup, and review are stable.
+Objective: Add network dead-link checking with bounded concurrency after large-list import, cleanup, review, and report export are stable.
 
 ## Summary
 
@@ -320,6 +320,7 @@ References:
 - [ ] Link checking runs with bounded/adaptive concurrency in the backend.
 - [ ] App does not modify Chrome or Edge bookmark stores.
 - [x] Bottom textarea reports imported count, dead links, duplicates, query-cleaned links, archived count, and errors.
+- [x] Bottom report can be copied and exported as a `.txt` file.
 - [ ] Bottom textarea reports `needs_get_fallback` or uncertain link counts separately from confirmed dead links.
 - [ ] MVP demo can show Chrome import and dead link cleanup report.
 
@@ -402,6 +403,26 @@ Not included in this slice:
 - Exportable clean report file.
 - Cancel/resume for long-running clean or link-check jobs.
 
+### Vertical Slice 0.2.2: Report Copy And Export
+
+Status: implemented locally
+
+Related issue: [#1](https://github.com/jedt3d/FavItBetter/issues/1)
+
+Implemented:
+
+- Added a report toolbar above the plain text report area.
+- Added Copy report with browser clipboard support and a textarea fallback.
+- Added Export `.txt` through a Tauri command that writes reports into the app data directory.
+- Sanitized report export filenames and labels.
+- Added backend unit coverage for report export file writing.
+
+Not included in this slice:
+
+- User-selected export destination.
+- Report history browser.
+- Network dead-link checking.
+
 ## Tests And Validation
 
 - Parse fixture Chromium bookmark JSON from Chrome.
@@ -418,10 +439,12 @@ Not included in this slice:
 - Verify active vs archived counts in report.
 - Verify UI search and sorting behavior.
 - Verify UI search and sorting do not render the full bookmark pool at once for large imports.
+- Verify report copy/export preserves the plain text report.
 - Verify WebView loads selected active bookmark.
 - Vertical Slice 0.1 validation: `npm run check`, `npm run build`, `cargo fmt --check`, `cargo test`, `cargo check`, and `npm run tauri -- build`.
 - Vertical Slice 0.2 validation: `cargo test`, `npm run check`, `cargo check`, `npm run build`, `npm run tauri -- build`, ProDOS audit, Jekyll docs build, and `git diff --check`.
 - Vertical Slice 0.2.1 validation: `cargo test`, `npm run check`, `npm run build`, Tauri build, Jekyll docs build, and `git diff --check`.
+- Vertical Slice 0.2.2 validation: `cargo test`, `npm run check`, `npm run build`, Tauri build, Jekyll docs build, and `git diff --check`.
 
 ## Documentation Impact
 

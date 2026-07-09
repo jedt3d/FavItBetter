@@ -1,7 +1,16 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { invoke } from '@tauri-apps/api/core';
-  import { Database, ExternalLink, RefreshCw, Search, Upload, WandSparkles } from '@lucide/svelte';
+  import {
+    Copy,
+    Database,
+    Download,
+    ExternalLink,
+    RefreshCw,
+    Search,
+    Upload,
+    WandSparkles
+  } from '@lucide/svelte';
 
   type BookmarkRow = {
     id: number;
@@ -54,6 +63,11 @@
     offset: number;
   };
 
+  type ExportReportResult = {
+    fileName: string;
+    path: string;
+  };
+
   type SortKey = 'title' | 'sourceBrowser' | 'folderPath' | 'originalUrl' | 'status';
   type StatusFilter = 'active' | 'archived' | 'all';
 
@@ -69,7 +83,9 @@
   let isTauriRuntime = false;
   let isImporting = false;
   let isCleaning = false;
+  let isExportingReport = false;
   let isLoadingList = false;
+  let reportActionStatus = '';
   let sourceBrowser = 'chrome';
   let fileInput: HTMLInputElement;
   let splitHost: HTMLElement;
@@ -254,6 +270,65 @@
     } finally {
       isCleaning = false;
     }
+  }
+
+  async function copyReport() {
+    if (!report.trim()) return;
+
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(report);
+      } else {
+        copyReportWithTextarea(report);
+      }
+      reportActionStatus = 'Report copied';
+    } catch (error) {
+      reportActionStatus = `Copy failed: ${formatError(error)}`;
+    }
+  }
+
+  async function exportReport() {
+    if (!isTauriRuntime) {
+      reportActionStatus = tauriRuntimeHelp;
+      return;
+    }
+    if (!report.trim() || isExportingReport) return;
+
+    isExportingReport = true;
+    try {
+      const result = await invoke<ExportReportResult>('export_report_txt', {
+        request: {
+          content: report,
+          label: reportLabel()
+        }
+      });
+      reportActionStatus = `Exported ${result.fileName}`;
+    } catch (error) {
+      reportActionStatus = `Export failed: ${formatError(error)}`;
+    } finally {
+      isExportingReport = false;
+    }
+  }
+
+  function copyReportWithTextarea(value: string) {
+    const textarea = document.createElement('textarea');
+    textarea.value = value;
+    textarea.setAttribute('readonly', 'true');
+    textarea.style.position = 'fixed';
+    textarea.style.opacity = '0';
+    document.body.appendChild(textarea);
+    textarea.select();
+    const copied = document.execCommand('copy');
+    document.body.removeChild(textarea);
+    if (!copied) {
+      throw new Error('Clipboard fallback did not complete');
+    }
+  }
+
+  function reportLabel(): string {
+    if (report.startsWith('Clean complete')) return 'clean-report';
+    if (report.startsWith('Import complete')) return 'import-report';
+    return 'report';
   }
 
   function startResize(event: PointerEvent) {
@@ -484,6 +559,29 @@
   </section>
 
   <section class="report-pane" aria-label="Import report">
+    <div class="report-toolbar">
+      <span>{reportActionStatus}</span>
+      <div>
+        <button type="button" onclick={copyReport} disabled={!report.trim()} title="Copy report">
+          <Copy size={15} aria-hidden="true" />
+          Copy
+        </button>
+        <button
+          type="button"
+          onclick={exportReport}
+          disabled={!isTauriRuntime || !report.trim() || isExportingReport}
+          title="Export report as text file"
+        >
+          {#if isExportingReport}
+            <RefreshCw size={15} aria-hidden="true" class="spin" />
+            Exporting
+          {:else}
+            <Download size={15} aria-hidden="true" />
+            Export .txt
+          {/if}
+        </button>
+      </div>
+    </div>
     <textarea readonly bind:value={report}></textarea>
   </section>
 </main>
@@ -531,7 +629,10 @@
   .table-pager,
   .table-pager > div,
   .preview-header,
-  .preview-header a {
+  .preview-header a,
+  .report-toolbar,
+  .report-toolbar > div,
+  .report-toolbar button {
     display: flex;
     align-items: center;
   }
@@ -900,9 +1001,48 @@
   }
 
   .report-pane {
+    display: grid;
+    grid-template-rows: 30px minmax(0, 1fr);
+    gap: 6px;
     border-top: 1px solid #cfd8dc;
     background: #f8fafb;
-    padding: 10px 12px;
+    padding: 8px 12px 10px;
+  }
+
+  .report-toolbar {
+    justify-content: space-between;
+    gap: 12px;
+    color: #64748b;
+    font-size: 12px;
+    min-width: 0;
+  }
+
+  .report-toolbar > span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .report-toolbar > div {
+    flex: 0 0 auto;
+    gap: 8px;
+  }
+
+  .report-toolbar button {
+    gap: 6px;
+    height: 28px;
+    padding: 0 10px;
+    border: 1px solid #b8c4cc;
+    border-radius: 6px;
+    background: #ffffff;
+    color: #334155;
+    cursor: pointer;
+  }
+
+  .report-toolbar button:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
   }
 
   textarea {
