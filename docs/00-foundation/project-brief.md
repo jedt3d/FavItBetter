@@ -35,7 +35,7 @@ The user wants to start a ProDOS-governed brainstorm for software that manages b
 - The first MVP is narrowed to a single-user desktop app for macOS and Windows.
 - The first MVP supports Google Chrome and Microsoft Edge bookmark files only.
 - The first MVP excludes mobile, Shared Drive sync, browser writeback, and AI cleanup.
-- The first MVP uses Tauri 2.0, SvelteKit 5, Rust backend commands, and a local SQLite project database.
+- The first MVP uses Tauri 2.0, SvelteKit running on Svelte 5, Rust backend commands, and a local SQLite project database.
 - The first MVP removes tracking query parameters only, not every query string.
 - The first MVP checks links with `HEAD` first, uses 80 seconds per attempt for up to three attempts, tags inconclusive results as `needs_get_fallback`, and runs `GET` fallback for those tagged links.
 

@@ -53,7 +53,7 @@ Use an Active Feature Board when several features are in motion.
 
 FavItBetter is being shaped as a local-first bookmark management application for desktop and mobile. The product should help the user collect bookmarks from multiple browsers, clean them down to the useful set, and synchronize the project-owned bookmark library through a personal Shared Drive folder.
 
-The first MVP is intentionally narrower: macOS and Windows only, Tauri 2.0 with SvelteKit 5, Google Chrome and Microsoft Edge local bookmark files only, local SQLite project storage, tracking-parameter-only URL cleanup, `HEAD`-first link checking with `GET` fallback for inconclusive results, no mobile, no Shared Drive sync, no browser writeback, and no AI cleanup.
+The first MVP is intentionally narrower: macOS and Windows only, Tauri 2.0 with SvelteKit running on Svelte 5, Google Chrome and Microsoft Edge local bookmark files only, local SQLite project storage, tracking-parameter-only URL cleanup, `HEAD`-first link checking with `GET` fallback for inconclusive results, no mobile, no Shared Drive sync, no browser writeback, and no AI cleanup.
 
 Current source of truth:
 

@@ -1,0 +1,61 @@
+{
+  "checksum": "sample",
+  "roots": {
+    "bookmark_bar": {
+      "children": [
+        {
+          "date_added": "13300000000000000",
+          "id": "1",
+          "name": "Project",
+          "type": "folder",
+          "children": [
+            {
+              "date_added": "13300000000000001",
+              "id": "2",
+              "name": "Example Domain",
+              "type": "url",
+              "url": "https://example.com/"
+            },
+            {
+              "date_added": "13300000000000002",
+              "id": "3",
+              "name": "Tauri",
+              "type": "url",
+              "url": "https://v2.tauri.app/start/"
+            }
+          ]
+        }
+      ],
+      "date_added": "13300000000000000",
+      "date_modified": "13300000000000003",
+      "id": "0",
+      "name": "Bookmarks Bar",
+      "type": "folder"
+    },
+    "other": {
+      "children": [
+        {
+          "date_added": "13300000000000004",
+          "id": "4",
+          "name": "SvelteKit Docs",
+          "type": "url",
+          "url": "https://svelte.dev/docs/kit/creating-a-project"
+        }
+      ],
+      "date_added": "13300000000000004",
+      "date_modified": "13300000000000004",
+      "id": "5",
+      "name": "Other Bookmarks",
+      "type": "folder"
+    },
+    "synced": {
+      "children": [],
+      "date_added": "13300000000000005",
+      "date_modified": "0",
+      "id": "6",
+      "name": "Mobile Bookmarks",
+      "type": "folder"
+    }
+  },
+  "version": 1
+}

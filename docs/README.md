@@ -6,11 +6,11 @@ This is the canonical knowledge base for FavItBetter.
 
 Feature: MVP Desktop Chromium Cleaner
 
-Current Phase: Product Planning
+Current Phase: Development
 
-Status: MVP architecture and cleanup policy captured
+Status: Vertical Slice 0.2.2 report copy/export implemented locally
 
-Objective: Keep the first desktop MVP spec synchronized before implementation.
+Objective: Add network dead-link checking with bounded concurrency after large-list import, cleanup, review, and report export are stable.
 
 ## Primary Docs
 

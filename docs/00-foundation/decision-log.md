@@ -247,7 +247,7 @@ This scope proves the core value quickly: import real browser bookmarks, clean o
 - Docs: `docs/00-foundation/project-brief.md`
 - Docs: `docs/03-tracks/ux-architecture-track.md`
 
-## 2026-07-09 - Use Tauri 2 SvelteKit 5 And SQLite For Desktop MVP
+## 2026-07-09 - Use Tauri 2 SvelteKit With Svelte 5 And SQLite For Desktop MVP
 
 Status: Accepted
 
@@ -255,11 +255,11 @@ Owner: product owner
 
 ## Context
 
-The product owner confirmed a preference for Tauri 2.0 with a SvelteKit 5 frontend and local SQLite storage. The MVP must run on macOS and Windows and needs high-concurrency URL checking.
+The product owner confirmed a preference for Tauri 2.0 with a SvelteKit/Svelte 5 frontend and local SQLite storage. The MVP must run on macOS and Windows and needs high-concurrency URL checking.
 
 ## Decision
 
-The desktop MVP will use Tauri 2.0 as the application shell, SvelteKit 5 as the frontend, Rust backend commands for local system work and network checks, and SQLite as the local project database.
+The desktop MVP will use Tauri 2.0 as the application shell, SvelteKit running on Svelte 5 as the frontend, Rust backend commands for local system work and network checks, and SQLite as the local project database.
 
 High-concurrency link checking will run in the Rust backend with bounded/adaptive async workers. SQLite writes should be batched or queued rather than performed independently by every checker task.
 
