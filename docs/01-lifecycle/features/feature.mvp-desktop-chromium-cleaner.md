@@ -23,9 +23,9 @@ related:
 
 Current Phase: Development
 
-Status: Vertical Slice 0.1 app foundation implemented locally
+Status: Vertical Slice 0.2 local clean engine implemented locally
 
-Objective: Validate the Tauri/SvelteKit/SQLite foundation before adding cleanup rules.
+Objective: Add network dead-link checking with bounded concurrency after local duplicate and tracking-query cleanup.
 
 ## Summary
 
@@ -112,7 +112,6 @@ The MVP does not sync, does not support mobile, does not write back into browser
 ## Open Questions
 
 - Should archived bookmarks remain searchable in the MVP?
-- Should WebView preview prefer `original_url` or `cleaned_url` when tracking parameters were removed?
 - What is the exact first tracking parameter list, and should it be configurable by editing a local config file after MVP?
 
 ## Goals
@@ -313,13 +312,13 @@ References:
 - [x] Table displays imported bookmarks with search and sorting.
 - [x] Selecting a row loads the bookmark in a right-side preview pane.
 - [x] Table and preview panes are resizable.
-- [ ] Clean button archives duplicates from the active pool.
+- [x] Clean button archives duplicates from the active pool.
 - [ ] Clean button archives confirmed dead links from the active pool after three attempts with 80 seconds per attempt and five-second retry gaps.
 - [ ] Clean button tags inconclusive `HEAD` results as `needs_get_fallback` and runs `GET` fallback before final classification.
-- [ ] Clean button applies tracking-parameter cleanup to canonical URLs and reports the effect.
+- [x] Clean button applies tracking-parameter cleanup to canonical URLs and reports the effect.
 - [ ] Link checking runs with bounded/adaptive concurrency in the backend.
 - [ ] App does not modify Chrome or Edge bookmark stores.
-- [ ] Bottom textarea reports imported count, dead links, duplicates, query-cleaned links, archived count, and errors.
+- [x] Bottom textarea reports imported count, dead links, duplicates, query-cleaned links, archived count, and errors.
 - [ ] Bottom textarea reports `needs_get_fallback` or uncertain link counts separately from confirmed dead links.
 - [ ] MVP demo can show Chrome import and dead link cleanup report.
 
@@ -350,6 +349,31 @@ Not included in this slice:
 - Automatic browser profile discovery.
 - Windows validation.
 
+### Vertical Slice 0.2: Local Clean Engine
+
+Status: implemented locally
+
+Related issue: [#1](https://github.com/jedt3d/FavItBetter/issues/1)
+
+Implemented:
+
+- Rust URL cleanup that removes `utm_*`, `fbclid`, `gclid`, `msclkid`, `mc_cid`, `mc_eid`, `igshid`, `ref`, and `spm`.
+- Fragment removal and tracking-parameter cleanup while preserving non-tracking query parameters.
+- Clean button wired to a Tauri `clean_bookmarks` command.
+- SQLite-backed clean reports in `clean_reports`.
+- Duplicate detection by cleaned canonical URL across the active pool.
+- Archive-only duplicate removal from the active pool with `duplicate` or `query_cleaned_duplicate` reasons.
+- Preview and external open actions prefer `cleaned_url` after cleanup while preserving `original_url` in the database.
+- Plain text Clean report showing active counts, query-cleaned links, removed tracking parameters, duplicate archives, dead-link count placeholder, and errors.
+
+Not included in this slice:
+
+- Network dead-link checking.
+- `HEAD`/`GET` fallback classification.
+- Bounded/adaptive link-check concurrency.
+- Automatic browser profile discovery.
+- Windows validation.
+
 ## Tests And Validation
 
 - Parse fixture Chromium bookmark JSON from Chrome.
@@ -367,6 +391,7 @@ Not included in this slice:
 - Verify UI search and sorting behavior.
 - Verify WebView loads selected active bookmark.
 - Vertical Slice 0.1 validation: `npm run check`, `npm run build`, `cargo fmt --check`, `cargo test`, `cargo check`, and `npm run tauri -- build`.
+- Vertical Slice 0.2 validation: `cargo test`, `npm run check`, `cargo check`, `npm run build`, `npm run tauri -- build`, ProDOS audit, Jekyll docs build, and `git diff --check`.
 
 ## Documentation Impact
 

@@ -32,6 +32,18 @@
     report: string;
   };
 
+  type CleanResult = {
+    activeCountBefore: number;
+    activeCountAfter: number;
+    duplicateCount: number;
+    queryCleanedCount: number;
+    removedTrackingParamCount: number;
+    archivedCount: number;
+    deadLinkCount: number;
+    errors: string[];
+    report: string;
+  };
+
   type SortKey = 'title' | 'sourceBrowser' | 'folderPath' | 'originalUrl' | 'status';
 
   let bookmarks: BookmarkRow[] = [];
@@ -41,6 +53,7 @@
   let sortDirection: 1 | -1 = 1;
   let report = 'Ready. Import a Chromium Bookmarks JSON file from Google Chrome or Microsoft Edge.';
   let isImporting = false;
+  let isCleaning = false;
   let sourceBrowser = 'chrome';
   let fileInput: HTMLInputElement;
   let splitHost: HTMLElement;
@@ -64,7 +77,8 @@
     .sort((a, b) => compareBookmarks(a, b, sortKey, sortDirection));
   $: selectedBookmark =
     filteredBookmarks.find((bookmark) => bookmark.id === selectedId) ?? filteredBookmarks[0] ?? null;
-  $: previewUrl = selectedBookmark?.originalUrl ?? '';
+  $: previewUrl = selectedBookmark?.cleanedUrl ?? selectedBookmark?.originalUrl ?? '';
+  $: canClean = bookmarks.some((bookmark) => bookmark.status === 'active') && !isImporting && !isCleaning;
 
   onMount(() => {
     void refreshBookmarks();
@@ -134,6 +148,23 @@
     }
   }
 
+  async function cleanBookmarks() {
+    if (!canClean) return;
+
+    isCleaning = true;
+    report = 'Cleaning local bookmark pool...';
+
+    try {
+      const result = await invoke<CleanResult>('clean_bookmarks');
+      await refreshBookmarks();
+      report = result.report;
+    } catch (error) {
+      report = `Clean failed.\n${formatError(error)}`;
+    } finally {
+      isCleaning = false;
+    }
+  }
+
   function startResize(event: PointerEvent) {
     event.preventDefault();
     window.addEventListener('pointermove', resizePanels);
@@ -195,11 +226,17 @@
       <button
         type="button"
         class="secondary-button"
-        disabled
-        title="Clean rules are planned for Vertical Slice 0.2"
+        onclick={cleanBookmarks}
+        disabled={!canClean}
+        title="Clean tracking parameters and archive duplicates"
       >
-        <WandSparkles size={18} aria-hidden="true" />
-        Clean
+        {#if isCleaning}
+          <RefreshCw size={18} aria-hidden="true" class="spin" />
+          Cleaning
+        {:else}
+          <WandSparkles size={18} aria-hidden="true" />
+          Clean
+        {/if}
       </button>
 
       <input
@@ -248,7 +285,7 @@
               >
                 <td>
                   <strong>{bookmark.title || 'Untitled'}</strong>
-                  <small>{bookmark.originalUrl}</small>
+                  <small>{bookmark.cleanedUrl || bookmark.originalUrl}</small>
                 </td>
                 <td>{bookmark.sourceBrowser}</td>
                 <td>{bookmark.folderPath}</td>
@@ -278,9 +315,9 @@
         <div class="preview-header">
           <div>
             <h2>{selectedBookmark.title || 'Untitled'}</h2>
-            <p>{selectedBookmark.originalUrl}</p>
+            <p>{selectedBookmark.cleanedUrl || selectedBookmark.originalUrl}</p>
           </div>
-          <a href={selectedBookmark.originalUrl} target="_blank" rel="noreferrer">
+          <a href={selectedBookmark.cleanedUrl || selectedBookmark.originalUrl} target="_blank" rel="noreferrer">
             <ExternalLink size={17} aria-hidden="true" />
             Open
           </a>

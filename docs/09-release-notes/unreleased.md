@@ -27,6 +27,7 @@ No application release exists yet.
 - Clarified MVP cleanup policy: remove tracking query parameters only, use 80 seconds per link-check attempt, and run `GET` fallback for inconclusive `HEAD` checks.
 - Upgraded the GitHub Pages workflow actions to Node 24-compatible major versions.
 - Added the first MVP app foundation: Tauri desktop shell, SvelteKit UI, SQLite-backed Chromium bookmark import, sortable/searchable table, preview pane, and import report.
+- Added the local MVP Clean engine: tracking-parameter cleanup, duplicate archiving by cleaned canonical URL, clean reports in SQLite, and a wired Clean button in the desktop UI.
 
 ## Release Impact
 

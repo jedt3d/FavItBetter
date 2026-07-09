@@ -24,7 +24,7 @@ FavItBetter follows the ProDOS feature cycle:
 ## Current Feature
 
 - `feature.bookmark-core`: proposed
-- `feature.mvp-desktop-chromium-cleaner`: in_progress, Vertical Slice 0.1 implemented locally
+- `feature.mvp-desktop-chromium-cleaner`: in_progress, Vertical Slice 0.2 implemented locally
 
 ## Completion Rule
 

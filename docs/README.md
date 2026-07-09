@@ -8,9 +8,9 @@ Feature: MVP Desktop Chromium Cleaner
 
 Current Phase: Development
 
-Status: Vertical Slice 0.1 app foundation implemented locally
+Status: Vertical Slice 0.2 local clean engine implemented locally
 
-Objective: Validate the Tauri/SvelteKit/SQLite foundation before adding cleanup rules.
+Objective: Add network dead-link checking with bounded concurrency after local duplicate and tracking-query cleanup.
 
 ## Primary Docs
 
