@@ -6,11 +6,11 @@ This is the canonical knowledge base for FavItBetter.
 
 Feature: MVP Desktop Chromium Cleaner
 
-Current Phase: Product Planning
+Current Phase: Development
 
-Status: MVP architecture and cleanup policy captured
+Status: Vertical Slice 0.1 app foundation implemented locally
 
-Objective: Keep the first desktop MVP spec synchronized before implementation.
+Objective: Validate the Tauri/SvelteKit/SQLite foundation before adding cleanup rules.
 
 ## Primary Docs
 

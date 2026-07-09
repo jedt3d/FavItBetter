@@ -2,7 +2,16 @@
 
 FavItBetter is a planned local-first bookmark manager for people who use multiple browsers and want a cleaner, smaller, more useful bookmark library.
 
-The project is currently in ProDOS knowledge capture and product planning. There is no application code yet.
+The project is currently in ProDOS-governed MVP development. The first Tauri/SvelteKit app foundation now exists, with local SQLite-backed Chromium bookmark import and preview as the first vertical slice.
+
+## Development
+
+- Install dependencies: `npm install`
+- Run frontend checks: `npm run check`
+- Build frontend: `npm run build`
+- Run Rust backend tests: `cd src-tauri && cargo test`
+- Build the desktop app: `npm run tauri -- build`
+- Try a sample import with `tests/fixtures/chromium-bookmarks.sample.json`.
 
 ## Current Direction
 

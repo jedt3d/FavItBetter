@@ -1,7 +1,7 @@
 ---
 id: feature.mvp-desktop-chromium-cleaner
 title: MVP Desktop Chromium Bookmark Cleaner
-status: proposed
+status: in_progress
 owner: product owner
 business_priority: critical
 ai_priority: medium
@@ -10,7 +10,7 @@ human_approval: required
 audit_required: true
 source_of_truth:
   - docs/01-lifecycle/features/feature.mvp-desktop-chromium-cleaner.md
-related_issue:
+related_issue: https://github.com/jedt3d/FavItBetter/issues/1
 related:
   - docs/00-foundation/project-brief.md
   - docs/01-lifecycle/features/feature.bookmark-core.md
@@ -21,11 +21,11 @@ related:
 
 ## Current Feature Cycle
 
-Current Phase: Product Planning
+Current Phase: Development
 
-Status: Architecture and cleanup policy captured
+Status: Vertical Slice 0.1 app foundation implemented locally
 
-Objective: Define the first buildable MVP scope for a single-user desktop bookmark cleaner.
+Objective: Validate the Tauri/SvelteKit/SQLite foundation before adding cleanup rules.
 
 ## Summary
 
@@ -49,7 +49,7 @@ The MVP does not sync, does not support mobile, does not write back into browser
 - Link check timeout is 80 seconds per attempt, with up to three attempts per link and five seconds between attempts.
 - AI is future scope for tags and categories, not MVP cleanup.
 - Imported and cleaned data should persist in a local SQLite project database.
-- Preferred MVP stack is Tauri 2.0, SvelteKit 5, and local SQLite.
+- Preferred MVP stack is Tauri 2.0, SvelteKit running on Svelte 5, and local SQLite.
 - Link checking should try `HEAD` first, tag uncertain results as `needs_get_fallback`, and run `GET` fallback for those tagged cases.
 - MVP demo success is importing from Google Chrome and reporting how many dead links were removed.
 - The UI can be one screen.
@@ -65,7 +65,7 @@ The MVP does not sync, does not support mobile, does not write back into browser
 - The MVP is single-user and local desktop only.
 - The MVP can use network access for link checks.
 - The user wants automatic cleanup rather than a configurable review flow in the MVP.
-- The user prefers Tauri 2.0 with a SvelteKit 5 frontend and local SQLite storage.
+- The user prefers Tauri 2.0 with a SvelteKit frontend running on Svelte 5 and local SQLite storage.
 - High-concurrency link checking is a material requirement for the MVP architecture.
 
 ## Decisions
@@ -79,7 +79,7 @@ The MVP does not sync, does not support mobile, does not write back into browser
 - MVP UI: one window with toolbar, searchable/sortable table, web preview, resizable split, and text report.
 - MVP button language: use **Clean**, not **Process**.
 - MVP persistence: store imported bookmarks, cleaned URLs, archive state, check results, and reports in a local SQLite project database.
-- MVP implementation stack: Tauri 2.0 shell, SvelteKit 5 frontend, Rust backend commands, and SQLite local storage.
+- MVP implementation stack: Tauri 2.0 shell, SvelteKit frontend running on Svelte 5, Rust backend commands, and SQLite local storage.
 - MVP link checking: use `HEAD` first, classify inconclusive results as `needs_get_fallback`, then run `GET` fallback as a second pass inside the same **Clean** action.
 - MVP timeout policy: 80 seconds per attempt, up to three attempts, with five seconds between attempts.
 - MVP concurrency model: use bounded asynchronous checking in the Rust backend and keep the UI free of concurrency controls.
@@ -288,7 +288,7 @@ The MVP should avoid user-facing cleanup options. Internal constants can exist f
 
 ## Technical Evaluation
 
-Tauri 2.0, SvelteKit 5, and SQLite are feasible for this MVP.
+Tauri 2.0, SvelteKit running on Svelte 5, and SQLite are feasible for this MVP.
 
 - Tauri backend commands can run asynchronous Rust work and stream progress to the frontend through channels or events.
 - SvelteKit can be used as a static frontend for Tauri with SSR disabled.
@@ -303,16 +303,16 @@ References:
 
 ## Acceptance Criteria
 
-- [ ] App is implemented as a Tauri 2.0 desktop app with a SvelteKit 5 frontend.
-- [ ] App stores imported and cleaned project state in local SQLite.
-- [ ] App runs on macOS.
+- [x] App is implemented as a Tauri 2.0 desktop app with a SvelteKit frontend running on Svelte 5.
+- [x] App stores imported project state in local SQLite.
+- [x] App builds on macOS.
 - [ ] App runs on Windows.
 - [ ] App imports local Google Chrome bookmark files.
 - [ ] App imports local Microsoft Edge bookmark files.
 - [ ] App merges Chrome and Edge bookmarks into one pool.
-- [ ] Table displays imported bookmarks with search and sorting.
-- [ ] Selecting a row loads the bookmark in a right-side WebView preview.
-- [ ] Table and preview panes are resizable.
+- [x] Table displays imported bookmarks with search and sorting.
+- [x] Selecting a row loads the bookmark in a right-side preview pane.
+- [x] Table and preview panes are resizable.
 - [ ] Clean button archives duplicates from the active pool.
 - [ ] Clean button archives confirmed dead links from the active pool after three attempts with 80 seconds per attempt and five-second retry gaps.
 - [ ] Clean button tags inconclusive `HEAD` results as `needs_get_fallback` and runs `GET` fallback before final classification.
@@ -322,6 +322,33 @@ References:
 - [ ] Bottom textarea reports imported count, dead links, duplicates, query-cleaned links, archived count, and errors.
 - [ ] Bottom textarea reports `needs_get_fallback` or uncertain link counts separately from confirmed dead links.
 - [ ] MVP demo can show Chrome import and dead link cleanup report.
+
+## Implementation Slices
+
+### Vertical Slice 0.1: App Foundation And Import Preview
+
+Status: implemented locally
+
+Related issue: [#1](https://github.com/jedt3d/FavItBetter/issues/1)
+
+Implemented:
+
+- Tauri 2 desktop shell.
+- SvelteKit frontend running on Svelte 5 with static adapter and SSR disabled.
+- Rust backend commands for `import_bookmarks_json` and `list_bookmarks`.
+- Local SQLite database at the app data directory.
+- Chromium `Bookmarks` JSON parser for nested folders and URL rows.
+- Single-screen UI with toolbar, browser source selector, import button, searchable/sortable table, resizable split, preview pane, and plain text report.
+- Sample fixture at `tests/fixtures/chromium-bookmarks.sample.json`.
+
+Not included in this slice:
+
+- Clean button behavior.
+- Duplicate cleanup.
+- Tracking parameter cleanup.
+- Dead-link checking.
+- Automatic browser profile discovery.
+- Windows validation.
 
 ## Tests And Validation
 
@@ -339,6 +366,7 @@ References:
 - Verify active vs archived counts in report.
 - Verify UI search and sorting behavior.
 - Verify WebView loads selected active bookmark.
+- Vertical Slice 0.1 validation: `npm run check`, `npm run build`, `cargo fmt --check`, `cargo test`, `cargo check`, and `npm run tauri -- build`.
 
 ## Documentation Impact
 

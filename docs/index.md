@@ -15,7 +15,7 @@ body_class: show_hero_search
 
 # FavItBetter Documentation
 
-FavItBetter is a planned local-first bookmark manager for desktop and mobile. The current documentation captures ProDOS project knowledge before implementation.
+FavItBetter is a local-first bookmark manager in early MVP development. The current documentation captures ProDOS project knowledge and the first Tauri/SvelteKit app foundation.
 
 ## Start Here
 
@@ -44,10 +44,10 @@ FavItBetter is a planned local-first bookmark manager for desktop and mobile. Th
 
 ## Current Feature Cycle
 
-Feature: Project Setup
+Feature: MVP Desktop Chromium Cleaner
 
-Current Phase: Documentation Synchronization
+Current Phase: Development
 
-Status: Publishing path reset to GitHub Pages with Jekyll
+Status: Vertical Slice 0.1 app foundation implemented locally
 
-Objective: Keep repository documentation canonical and publish it as a static documentation site.
+Objective: Validate the Tauri/SvelteKit/SQLite foundation before adding cleanup rules.

@@ -45,7 +45,7 @@ Build the core FavItBetter experience: import bookmarks from multiple browsers, 
 - Desktop and mobile are first-class product targets.
 - Extension points are part of the core architecture direction.
 - The first concrete MVP implementation slice is `feature.mvp-desktop-chromium-cleaner`.
-- The desktop MVP uses Tauri 2.0, SvelteKit 5, Rust backend commands, and a local SQLite project database.
+- The desktop MVP uses Tauri 2.0, SvelteKit running on Svelte 5, Rust backend commands, and a local SQLite project database.
 - The desktop MVP removes tracking query parameters only and preserves non-tracking query strings.
 - The desktop MVP checks links with `HEAD` first, tags inconclusive results as `needs_get_fallback`, runs `GET` fallback for those tagged links, and uses 80 seconds per attempt for up to three attempts.
 
@@ -236,7 +236,7 @@ MVP constraints:
 - no browser writeback
 - archive-only cleanup
 - local SQLite project database
-- Tauri 2.0 and SvelteKit 5
+- Tauri 2.0 and SvelteKit running on Svelte 5
 - tracking-parameter-only query cleanup
 - `HEAD` first link checking with `GET` fallback for inconclusive results
 - one-screen UI with toolbar, table, WebView preview, resizable split, and text report

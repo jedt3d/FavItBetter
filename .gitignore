@@ -4,3 +4,8 @@ _site/
 .sass-cache/
 .bundle/
 vendor/bundle/
+node_modules/
+.svelte-kit/
+build/
+src-tauri/gen/
+src-tauri/target/
