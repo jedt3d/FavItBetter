@@ -51,7 +51,10 @@
   let query = '';
   let sortKey: SortKey = 'title';
   let sortDirection: 1 | -1 = 1;
+  const tauriRuntimeHelp =
+    'This screen is running in a normal browser, so Tauri commands are unavailable.\nRun `npm run tauri -- dev` and use the launched FavItBetter desktop window instead of http://127.0.0.1:5173/.';
   let report = 'Ready. Import a Chromium Bookmarks JSON file from Google Chrome or Microsoft Edge.';
+  let isTauriRuntime = false;
   let isImporting = false;
   let isCleaning = false;
   let sourceBrowser = 'chrome';
@@ -78,11 +81,25 @@
   $: selectedBookmark =
     filteredBookmarks.find((bookmark) => bookmark.id === selectedId) ?? filteredBookmarks[0] ?? null;
   $: previewUrl = selectedBookmark?.cleanedUrl ?? selectedBookmark?.originalUrl ?? '';
-  $: canClean = bookmarks.some((bookmark) => bookmark.status === 'active') && !isImporting && !isCleaning;
+  $: canClean =
+    isTauriRuntime &&
+    bookmarks.some((bookmark) => bookmark.status === 'active') &&
+    !isImporting &&
+    !isCleaning;
 
   onMount(() => {
+    isTauriRuntime = hasTauriRuntime();
+    if (!isTauriRuntime) {
+      report = tauriRuntimeHelp;
+      return;
+    }
+
     void refreshBookmarks();
   });
+
+  function hasTauriRuntime(): boolean {
+    return typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window;
+  }
 
   function compareBookmarks(
     a: BookmarkRow,
@@ -117,11 +134,22 @@
   }
 
   function openImportPicker() {
+    if (!isTauriRuntime) {
+      report = tauriRuntimeHelp;
+      return;
+    }
+
     fileInput.click();
   }
 
   async function handleFileSelected(event: Event) {
     const target = event.currentTarget as HTMLInputElement;
+    if (!isTauriRuntime) {
+      report = tauriRuntimeHelp;
+      target.value = '';
+      return;
+    }
+
     const file = target.files?.[0];
     if (!file) return;
 
@@ -213,7 +241,13 @@
         </select>
       </label>
 
-      <button type="button" class="primary-button" onclick={openImportPicker} disabled={isImporting}>
+      <button
+        type="button"
+        class="primary-button"
+        onclick={openImportPicker}
+        disabled={isImporting || !isTauriRuntime}
+        title={isTauriRuntime ? 'Import Chromium Bookmarks JSON' : 'Run with npm run tauri -- dev'}
+      >
         {#if isImporting}
           <RefreshCw size={18} aria-hidden="true" class="spin" />
           Importing
@@ -228,7 +262,9 @@
         class="secondary-button"
         onclick={cleanBookmarks}
         disabled={!canClean}
-        title="Clean tracking parameters and archive duplicates"
+        title={isTauriRuntime
+          ? 'Clean tracking parameters and archive duplicates'
+          : 'Run with npm run tauri -- dev'}
       >
         {#if isCleaning}
           <RefreshCw size={18} aria-hidden="true" class="spin" />
